@@ -54,4 +54,11 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
 
     [HttpDelete("{id}")]
     public IActionResult Delete(int id) => Ok(context.DeleteTask(id)); 
+
+    [HttpGet("Log")]
+    public IActionResult GetLog()
+    {
+        logger.LogInformation("I'm called!");
+        return Ok();
+    }
 }
