@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using web_api_template_forts_controllers_efcore.Interfaces;
+using web_api_template_forts_controllers_efcore.Models;
 
 namespace web_api_template_forts_controllers_efcore.Controllers;
 
@@ -32,7 +33,7 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
     /* Legg merke til at metodene våre også markerer hvilken http metode de skal matche, via Attributtene sine. */
     [HttpGet]
     /* Det kan være lurt å matche navnet på metoden i controlleren, med navnet på http metode + subroute. */
-    public IActionResult Get() => Ok(context.GetAllTasks());
+    public IActionResult Get([FromQuery] QueryDto queryDto) => Ok(queryDto.BuildQuery(context));
 
     [HttpGet("/complete")]
     /* Se navngivningen på denne metoden. */
@@ -50,7 +51,7 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
     public IActionResult CompleteId(int id) => Ok(context.CompleteTask(id));
 
     [HttpPost]
-    public IActionResult Post(string title, string description, DateTime dueDate) => Ok(context.AddTask(title, description, dueDate));
+    public IActionResult Post([FromBody] TaskDto taskDto) => Ok(taskDto.InsertTask(context));
 
     [HttpDelete("{id}")]
     public IActionResult Delete(int id) => Ok(context.DeleteTask(id)); 
