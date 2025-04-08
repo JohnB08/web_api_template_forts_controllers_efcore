@@ -1,11 +1,14 @@
+using System.ComponentModel.DataAnnotations;
 using web_api_template_forts_controllers_efcore.Interfaces;
 
 namespace web_api_template_forts_controllers_efcore.Models;
 
 
-public class UserTask(int id, string title, string description, DateTime dueDate): IUserTask
+public class UserTask(string title, string description, DateTime dueDate): IUserTask
 {
-    public int Id {get; init;} = id;
+    /* Her kan vi markere Id som en Primary Key i databasen vår. */
+    [Key]
+    public int Id {get; init;}
     public string Title {get;set;} = title;
 
     public string Description {get;set;} = description;

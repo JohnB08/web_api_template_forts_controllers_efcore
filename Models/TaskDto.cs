@@ -16,8 +16,8 @@ public class TaskDto
     [JsonPropertyName("DueDate")]
     public DateTime DueDate { get; set; }
 
-    public IUserTask InsertTask(ITaskContext context)
+    public async Task<UserTask> InsertTask(ITaskContext context)
     {
-        return context.AddTask(Title, Description, DueDate);
+        return await context.AddTask(Title, Description, DueDate);
     }
 }

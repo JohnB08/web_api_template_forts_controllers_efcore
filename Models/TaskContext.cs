@@ -1,52 +1,59 @@
+using Microsoft.EntityFrameworkCore;
 using web_api_template_forts_controllers_efcore.Interfaces;
 
 namespace web_api_template_forts_controllers_efcore.Models;
 
-public class TaskContext : ITaskContext
+public class TaskContext(DbContextOptions<TaskContext> options) : DbContext(options), ITaskContext
 {
-    private List<IUserTask> _tasks = [];
-    private int _nextId;
-    public int Count => _tasks.Count;
 
-    public IUserTask AddTask(string title, string description, DateTime dueDate)
+    /* Det som var en privat samling, er nå en public DbSet, som er en Ef-core unik datastruktur, som reflekterer hvordan samlingen er lagret i "set" */
+    public DbSet<UserTask> Tasks {get;set;}
+    public int Count => Tasks.Count();
+
+    public async Task<UserTask> AddTask(string title, string description, DateTime dueDate)
     {
-        var newTask = new UserTask(++_nextId, title, description, dueDate);
-        _tasks.Add(newTask);
+        /* Legg også merke til at _nextId er vekke, samt id constructoren i UserTask. Id håndteringen er nå flyttet til databasen i steden for.  */
+        var newTask = new UserTask( title, description, dueDate);
+        await Tasks.AddAsync(newTask);
+        await SaveChangesAsync();
         return newTask;
     }
 
-    public bool CompleteTask(int id)
+    public async Task<bool> CompleteTask(int id)
     {
-        var task = _tasks.FirstOrDefault(task => task.Id == id);
+        var task = await Tasks.FirstOrDefaultAsync(task => task.Id == id);
         if (task is null) return false;
         task.MarkAsCompleted();
+        await SaveChangesAsync();
         return true;
     }
 
-    public bool DeleteTask(int id)
+    public async Task<bool> DeleteTask(int id)
     {
-        var task = _tasks.FirstOrDefault(task => task.Id == id);
+        var task = await Tasks.FirstOrDefaultAsync(task => task.Id == id);
         if (task is null) return false;
-        return _tasks.Remove(task);
+        Tasks.Remove(task);
+        await SaveChangesAsync();
+        return true;
     }
 
-    public List<IUserTask> GetAllTasks()
+    public async Task<List<UserTask>> GetAllTasks()
     {
-        return _tasks;
+        return await Tasks.AsNoTracking().ToListAsync();
     }
 
-    public List<IUserTask> GetCompleteTasks()
+    public async Task<List<UserTask>> GetCompleteTasks()
     {
-        return [.._tasks.Where(task => task.IsCompleted)];
+        return await Tasks.AsNoTracking().Where(task => task.IsCompleted).ToListAsync();
     }
 
-    public List<IUserTask> GetPendingTasks()
+    public async Task<List<UserTask>> GetPendingTasks()
     {
-        return [.._tasks.Where(task => !task.IsCompleted)];
+        return await Tasks.AsNoTracking().Where(task => !task.IsCompleted).ToListAsync();
     }
 
-    public IUserTask? GetTaskById(int id)
+    public async Task<UserTask?> GetTaskById(int id)
     {
-        return _tasks.FirstOrDefault(task => task.Id == id);
+        return await Tasks.AsNoTracking().FirstOrDefaultAsync(task => task.Id == id);
     }
 }

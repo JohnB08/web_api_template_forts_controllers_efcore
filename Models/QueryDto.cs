@@ -23,9 +23,10 @@ public class QueryDto
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    public IQueryable<IUserTask> BuildQuery(ITaskContext context)
+    public async Task<IQueryable<IUserTask>> BuildQuery(ITaskContext context)
     {
-        var query = context.GetAllTasks().AsQueryable();
+        var list = await context.GetAllTasks();
+        var query = list.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(Title)) query = query.Where(task => task.Title.Contains(Title, StringComparison.InvariantCultureIgnoreCase));
 

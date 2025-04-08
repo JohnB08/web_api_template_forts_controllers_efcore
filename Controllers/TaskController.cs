@@ -1,5 +1,7 @@
+using System.Data.Common;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using web_api_template_forts_controllers_efcore.Interfaces;
 using web_api_template_forts_controllers_efcore.Models;
 
@@ -34,11 +36,11 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
     /* Legg merke til at metodene våre også markerer hvilken http metode de skal matche, via Attributtene sine. */
     [HttpGet]
     /* Det kan være lurt å matche navnet på metoden i controlleren, med navnet på http metode + subroute. */
-    public IActionResult Get([FromQuery] QueryDto queryDto) 
+    public async Task<IActionResult> Get([FromQuery] QueryDto queryDto) 
     {
         try 
         {
-            return Ok(queryDto.BuildQuery(context));
+            return Ok(await queryDto.BuildQuery(context));
         }
         catch (Exception ex)
         {
@@ -47,12 +49,15 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
         }
     }
 
+    /* Legg merke til at også her er hvert endepunkt gjort om til asynkrone Tasks, som nå kan kjøres på sin egen threadpool. Da ungår vi at forespørsler kan blokkere hverandre. 
+    Siden vi vet at hoved-threaden vår "tilgjengeliggjøres" og kan behandle andre operasjoner, mens den awaiter resultatet for hver oppgave. */
+
     [HttpGet("/complete")]
     /* Se navngivningen på denne metoden. */
-    public IActionResult GetComplete(){
+    public async Task<IActionResult> GetComplete(){
         try
         {
-            return Ok(context.GetCompleteTasks());
+            return Ok(await context.GetCompleteTasks());
         }
         catch(Exception ex)
         {
@@ -66,11 +71,11 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
     [HttpGet("/pending")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult GetPending()
+    public async Task<IActionResult> GetPending()
     {
         try 
         {
-            return Ok(context.GetPendingTasks());
+            return Ok(await context.GetPendingTasks());
         }
         catch (Exception ex)
         {
@@ -82,11 +87,11 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
     /* Vi kan ta inn elementer parsed fra RawUrl her også, som vi kunne med vår minimal-api struktur. */
     [HttpGet("{id}")]
     /* Legg og merke til metodeoverloadingen her, en controller basert api er en naturlig plass hvor overloading eksisterer.  */
-    public IActionResult Get(int id)
+    public async Task<IActionResult> Get(int id)
     {
         try 
         {
-            return Ok(context.GetPendingTasks());
+            return Ok(await context.GetPendingTasks());
         }
         catch (Exception ex)
         {
@@ -96,13 +101,13 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
     }
 
     [HttpPatch("/complete/{id}")]
-    public IActionResult CompleteId(int id)
+    public async Task<IActionResult> CompleteId(int id)
     {
         try
         {
-            return Ok(context.CompleteTask(id));
+            return Ok(await context.CompleteTask(id));
         }
-        catch(Exception ex)
+        catch(DbUpdateException ex)
         {
             logger.LogCritical(ex.Message);
             return StatusCode(500, ex.Message);
@@ -110,18 +115,18 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
     }
 
     [HttpPost]
-    public IActionResult Post([FromBody] TaskDto taskDto)
+    public async Task<IActionResult> Post([FromBody] TaskDto taskDto)
     {
         try
         {
-            return Ok(taskDto.InsertTask(context));
+            return Ok(await taskDto.InsertTask(context));
         }
         catch (JsonException ex)
         {
             logger.LogError(ex.Message);
             return BadRequest();
         }
-        catch (Exception ex)
+        catch (DbUpdateException ex)
         {
             logger.LogCritical(ex.Message);
             return StatusCode(500, ex.Message);
@@ -129,13 +134,13 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
         try
         {
-            return Ok(context.DeleteTask(id));
+            return Ok(await context.DeleteTask(id));
         }
-        catch (Exception ex)
+        catch (DbUpdateException ex)
         {
             logger.LogCritical(ex.Message);
             return StatusCode(500, ex.Message);
