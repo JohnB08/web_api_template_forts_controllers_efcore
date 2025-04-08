@@ -3,7 +3,11 @@ using web_api_template_forts_controllers_efcore.Interfaces;
 
 namespace web_api_template_forts_controllers_efcore.Models;
 
-public class TaskDto : ITaskDto
+
+/* Dette representerer et data transfer object, som skal kunne flytte data mellom en JsonBody til context.AddTask metoden vår. 
+Vi kan bruke autodeserialisering av request.Context.Body for å patternmatche felt til våre properties. 
+Det blir gjort svært lett via JsonPropertyName attributtene. */
+public class TaskDto
 {
     [JsonPropertyName("title")]
     public required string Title { get; set; }

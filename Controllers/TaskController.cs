@@ -61,7 +61,11 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
         }
     }
 
+    
+    /* Nedenfor ser dere en simpel måte å legge på hvilke potensielle statuskoder endepunktet leverer tilbake, det kan gjøre autodokumentasjonen fra swagger hakket bedre.  */
     [HttpGet("/pending")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public IActionResult GetPending()
     {
         try 
