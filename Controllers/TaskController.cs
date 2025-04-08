@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using web_api_template_forts_controllers_efcore.Interfaces;
 using web_api_template_forts_controllers_efcore.Models;
@@ -33,28 +35,109 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
     /* Legg merke til at metodene våre også markerer hvilken http metode de skal matche, via Attributtene sine. */
     [HttpGet]
     /* Det kan være lurt å matche navnet på metoden i controlleren, med navnet på http metode + subroute. */
-    public IActionResult Get([FromQuery] QueryDto queryDto) => Ok(queryDto.BuildQuery(context));
+    public IActionResult Get([FromQuery] QueryDto queryDto) 
+    {
+        try 
+        {
+            return Ok(queryDto.BuildQuery(context));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.Message);
+            return StatusCode(500, ex.Message);
+        }
+    }
 
     [HttpGet("/complete")]
     /* Se navngivningen på denne metoden. */
-    public IActionResult GetComplete() => Ok(context.GetCompleteTasks());
+    public IActionResult GetComplete(){
+        try
+        {
+            return Ok(context.GetCompleteTasks());
+        }
+        catch(Exception ex)
+        {
+            logger.LogError(ex.Message);
+            return StatusCode(500, ex.Message);
+        }
+    }
 
     [HttpGet("/pending")]
-    public IActionResult GetPending() => Ok(context.GetPendingTasks());
+    public IActionResult GetPending()
+    {
+        try 
+        {
+            return Ok(context.GetPendingTasks());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.Message);
+            return StatusCode(500, ex.Message);
+        }
+    }
 
     /* Vi kan ta inn elementer parsed fra RawUrl her også, som vi kunne med vår minimal-api struktur. */
     [HttpGet("{id}")]
     /* Legg og merke til metodeoverloadingen her, en controller basert api er en naturlig plass hvor overloading eksisterer.  */
-    public IActionResult Get(int id) => Ok(context.GetTaskById(id));
+    public IActionResult Get(int id)
+    {
+        try 
+        {
+            return Ok(context.GetPendingTasks());
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex.Message);
+            return StatusCode(500, ex.Message);
+        }
+    }
 
     [HttpPatch("/complete/{id}")]
-    public IActionResult CompleteId(int id) => Ok(context.CompleteTask(id));
+    public IActionResult CompleteId(int id)
+    {
+        try
+        {
+            return Ok(context.CompleteTask(id));
+        }
+        catch(Exception ex)
+        {
+            logger.LogCritical(ex.Message);
+            return StatusCode(500, ex.Message);
+        }
+    }
 
     [HttpPost]
-    public IActionResult Post([FromBody] TaskDto taskDto) => Ok(taskDto.InsertTask(context));
+    public IActionResult Post([FromBody] TaskDto taskDto)
+    {
+        try
+        {
+            return Ok(taskDto.InsertTask(context));
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex.Message);
+            return BadRequest();
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex.Message);
+            return StatusCode(500, ex.Message);
+        }
+    }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id) => Ok(context.DeleteTask(id)); 
+    public IActionResult Delete(int id)
+    {
+        try
+        {
+            return Ok(context.DeleteTask(id));
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex.Message);
+            return StatusCode(500, ex.Message);
+        }
+    } 
 
     [HttpGet("Log")]
     public IActionResult GetLog()
