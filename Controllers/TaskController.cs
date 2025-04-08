@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using web_api_template_forts_controllers_efcore.Interfaces;
 using web_api_template_forts_controllers_efcore.Models;
