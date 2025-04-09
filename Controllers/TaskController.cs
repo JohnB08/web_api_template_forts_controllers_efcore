@@ -126,6 +126,7 @@ public class TaskController(ITaskContext context, ILogger<TaskController> logger
             logger.LogError(ex.Message);
             return BadRequest();
         }
+        //Vi kan og nå spesifisere enda mer hvilke errorer vi vil gi tilbake.
         catch (DbUpdateException ex)
         {
             logger.LogCritical(ex.Message);
