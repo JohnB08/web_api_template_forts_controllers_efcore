@@ -23,7 +23,7 @@ public class TaskContext(DbContextOptions<TaskContext> options) : DbContext(opti
     {
         var task = await Tasks.FirstOrDefaultAsync(task => task.Id == id);
         if (task is null) return false;
-        task.MarkAsCompleted();
+        task.IsCompleted = true;
         await SaveChangesAsync();
         return true;
     }
