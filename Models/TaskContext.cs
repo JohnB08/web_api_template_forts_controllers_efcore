@@ -37,6 +37,8 @@ public class TaskContext(DbContextOptions<TaskContext> options) : DbContext(opti
         return true;
     }
 
+    /* I de etterfølgende metodene skal vi jo bare "lese" tasks, vi skal ikke endre de på noen måte. Da kan vi hente ut Tasks.AsNoTracking(), det betyr at vi sier til EF core
+    at denne hentingen av data, trenger ingen tracker overhead.  */
     public async Task<List<UserTask>> GetAllTasks()
     {
         return await Tasks.AsNoTracking().ToListAsync();
